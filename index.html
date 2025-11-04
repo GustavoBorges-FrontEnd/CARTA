@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta Especial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+        }
+
+        .envelope {
+            width: 300px;
+            height: 200px;
+            position: relative;
+            transition: all 0.8s ease-in-out;
+        }
+
+        .envelope-back {
+            width: 100%;
+            height: 100%;
+            background: #8B4513;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .envelope-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #A0522D 25%, transparent 25%), 
+                        linear-gradient(-45deg, #A0522D 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #A0522D 75%), 
+                        linear-gradient(-45deg, transparent 75%, #A0522D 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            opacity: 0.1;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: #654321;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: top center;
+            transition: transform 0.8s ease-in-out;
+            z-index: 3;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(-180deg);
+        }
+
+        .seal {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #DC143C;
+            border-radius: 50%;
+            z-index: 4;
+            transition: all 0.6s ease-in-out;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .seal::before {
+            content: '♥';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .envelope.open .seal {
+            transform: translateX(-50%) scale(0);
+            opacity: 0;
+        }
+
+        .letter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 260px;
+            height: 160px;
+            background: #FFF8DC;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px) scale(0.8);
+            opacity: 0;
+            transition: all 1s ease-in-out 0.3s;
+            z-index: 2;
+            border: 2px solid #DDD;
+        }
+
+        .envelope.open .letter {
+            transform: translateY(-50px) scale(1.2);
+            opacity: 1;
+        }
+
+        .letter-content {
+            text-align: center;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .letter-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #8B4513;
+            text-decoration: underline;
+        }
+
+        .letter-text {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .letter-signature {
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 15px;
+            text-align: right;
+            color: #666;
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        .envelope.open .instruction {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkle 2s infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background: #DC143C;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .envelope.open .close-btn {
+            opacity: 1;
+        }
+
+        .close-btn:hover {
+            background: #B22222;
+            transform: scale(1.1);
+        }
+
+        /* Responsividade para celular */
+        @media (max-width: 480px) {
+            .envelope {
+                width: 280px;
+                height: 180px;
+            }
+            
+            .letter {
+                width: 240px;
+                height: 140px;
+                padding: 15px;
+            }
+            
+            .letter-title {
+                font-size: 16px;
+            }
+            
+            .letter-text {
+                font-size: 12px;
+            }
+            
+            .instruction {
+                font-size: 14px;
+                bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="envelope" id="envelope">
+            <div class="envelope-back"></div>
+            <div class="envelope-flap"></div>
+            <div class="seal"></div>
+            <div class="letter">
+                <div class="letter-content">
+                    <div class="letter-title"></div>
+                    <div class="letter-text">
+                        <br>
+                        Vai sair comigo quando Ana Luiza Chaves?
+                    </div>
+                    <div class="letter-text">
+                    </div>
+                    <div class="letter-signature">
+                    </div>
+                </div>
+            </div>
+            <button class="close-btn" id="closeBtn">×</button>
+        </div>
+        <div class="sparkles" id="sparkles"></div>
+    </div>
+    
+    <div class="instruction" id="instruction">
+        📧 Clique na carta para abrir
+    </div>
+
+    <script>
+        const envelope = document.getElementById('envelope');
+        const closeBtn = document.getElementById('closeBtn');
+        const sparkles = document.getElementById('sparkles');
+        const instruction = document.getElementById('instruction');
+
+        // Função para criar efeito de brilho
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * 100 + '%';
+            sparkle.style.top = Math.random() * 100 + '%';
+            sparkle.style.animationDelay = Math.random() * 2 + 's';
+            sparkles.appendChild(sparkle);
+
+            setTimeout(() => {
+                sparkle.remove();
+            }, 2000);
+        }
+
+        // Criar brilhos periodicamente
+        setInterval(createSparkle, 300);
+
+        // Função para abrir a carta
+        function openEnvelope() {
+            envelope.classList.add('open');
+            instruction.style.opacity = '0';
+            
+            // Adicionar mais brilhos quando abrir
+            for(let i = 0; i < 10; i++) {
+                setTimeout(createSparkle, i * 100);
+            }
+        }
+
+        // Função para fechar a carta
+        function closeEnvelope() {
+            envelope.classList.remove('open');
+            setTimeout(() => {
+                instruction.style.opacity = '0.8';
+            }, 800);
+        }
+
+        // Event listeners
+        envelope.addEventListener('click', function(e) {
+            if (!envelope.classList.contains('open') && e.target !== closeBtn) {
+                openEnvelope();
+            }
+        });
+
+        closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeEnvelope();
+        });
+
+        // Suporte para touch em dispositivos móveis
+        envelope.addEventListener('touchstart', function(e) {
+            if (!envelope.classList.contains('open') && e.target !== closeBtn) {
+                e.preventDefault();
+                openEnvelope();
+            }
+        });
+
+        closeBtn.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            closeEnvelope();
+        });
+
+        // Efeito de hover no desktop
+        envelope.addEventListener('mouseenter', function() {
+            if (!envelope.classList.contains('open')) {
+                envelope.style.transform = 'scale(1.05)';
+            }
+        });
+
+        envelope.addEventListener('mouseleave', function() {
+            if (!envelope.classList.contains('open')) {
+                envelope.style.transform = 'scale(1)';
+            }
+        });
+    </script>
+</body>
+</html>
